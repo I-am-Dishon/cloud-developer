@@ -1,6 +1,9 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+const fs = require("fs");
+import { resolve } from 'path';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+const imageFolder = './src/util/tmp/';
 
 (async () => {
 
@@ -30,7 +33,24 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   /**************************************************************************** */
 
   //! END @TODO1
+  app.get( "/filteredimage", async ( req, res ) => {
+    var path = await filterImageFromURL(req.query.image_url)
+    res.sendFile(path)
+
+    var files = []
   
+    fs.readdirSync(imageFolder).forEach(file => {
+      var ow = imageFolder + file
+      var realPath = resolve(ow);
+      files.push(realPath)
+    });
+    
+    res.on('finish', () => {
+       deleteLocalFiles(files)
+    });
+
+   
+  } );
   // Root Endpoint
   // Displays a simple message to the user
   app.get( "/", async ( req, res ) => {
